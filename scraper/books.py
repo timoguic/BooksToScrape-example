@@ -65,23 +65,23 @@ def get_book_dict_from_url(book_url):
     if product_desc_elem:
         product_desc_txt = product_desc_elem[0].text
 
-    data["product_description"] = product_desc_txt.strip()
+    data["product_description"] = product_desc_txt
 
     # UPC code
-    data["upc"] = get_td_text_from_th_in_book_tree(tree, "UPC").strip()
+    data["upc"] = get_td_text_from_th_in_book_tree(tree, "UPC")
 
     # Convert prices to Decimal
     rgxp_price = r"(\d+).(\d+)"
-    p_no_tax = get_td_text_from_th_in_book_tree(tree, "Price (excl. tax)").strip()
+    p_no_tax = get_td_text_from_th_in_book_tree(tree, "Price (excl. tax)")
     p_elems = re.search(rgxp_price, p_no_tax).groups()
     data["price_excluding_tax"] = Decimal(f"{p_elems[0]}.{p_elems[1]}")
 
-    p_with_tax = get_td_text_from_th_in_book_tree(tree, "Price (incl. tax)").strip()
+    p_with_tax = get_td_text_from_th_in_book_tree(tree, "Price (incl. tax)")
     p_elems = re.search(rgxp_price, p_no_tax).groups()
     data["price_including_tax"] = Decimal(f"{p_elems[0]}.{p_elems[1]}")
 
     # Parse the available number to int
-    num_avail_label = get_td_text_from_th_in_book_tree(tree, "Availability").strip()
+    num_avail_label = get_td_text_from_th_in_book_tree(tree, "Availability")
     num_avail_text = re.search(r"(\d+) available", num_avail_label).groups()[0]
     data["number_available"] = int(num_avail_text)
 
@@ -92,7 +92,7 @@ def get_book_dict_from_url(book_url):
 
     # Title
     title_xpath = "//div[contains(@class, 'product_main')]/h1"
-    data["title"] = tree.xpath(title_xpath)[0].text.strip()
+    data["title"] = tree.xpath(title_xpath)[0].text
 
     # Ugly conversion from word to int...
     rating_xpath = "//p[contains(@class, 'star-rating')]"
@@ -100,5 +100,10 @@ def get_book_dict_from_url(book_url):
     rating_classes.remove("star-rating")
     rating_word = str.lower(rating_classes.pop())
     data["rating_review"] = ONE_TO_FIVE_DICT_TO_INT[rating_word]
+
+    # Strip that shit
+    for k, v in data.items():
+        if type(v) is str:
+            data[k] = v.strip()
 
     return data

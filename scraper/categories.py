@@ -1,4 +1,3 @@
-import re
 from urllib.parse import urljoin
 
 from .helpers import slugify, url_to_tree

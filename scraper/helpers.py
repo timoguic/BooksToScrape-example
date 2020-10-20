@@ -1,5 +1,4 @@
 import io
-import os
 import re
 import shutil
 from pathlib import Path
@@ -7,6 +6,18 @@ from urllib.parse import urlparse
 
 import lxml.etree
 import requests
+
+from .config import OUTPUT_DIR
+
+
+def create_folder_or_raise(dirname):
+    dirpath = Path(dirname)
+    if not dirpath.exists():
+        dirpath.mkdir(exist_ok=True)
+    elif not dirpath.is_dir():
+        raise FileExistsError("{dirpath} exists and is not a directory!")
+
+    return dirpath
 
 
 def slugify(txt):
@@ -26,12 +37,7 @@ def url_to_tree(url):
 
 def save_image_url_to_file(img_url):
     """ Gets the image at the given URL, and save it to the `images` folder """
-    img_path = Path("images")
-
-    if not img_path.exists():
-        os.makedirs("images", exist_ok=True)
-    elif not img_path.is_dir():
-        raise FileExistsError("The `images` file exists and is not a dircotory.")
+    img_path = create_folder_or_raise(Path(OUTPUT_DIR) / "images")
 
     req = requests.get(img_url, stream=True)
     img_file = Path(urlparse(img_url).path).name
