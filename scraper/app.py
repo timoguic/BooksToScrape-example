@@ -1,0 +1,18 @@
+from csv import DictWriter
+
+from .books import BOOK_FIELDS, books_from_cat_url
+from .categories import categories_url
+
+ROOT_URL = "http://books.toscrape.com"
+
+def scrape_all(root_url=None):
+    if not root_url:
+        root_url = ROOT_URL
+
+    for cat_slug, cat in categories_url(ROOT_URL):
+        with open(f"{cat_slug}.csv", "w", newline="", encoding="utf-8") as fp:
+            writer = DictWriter(fp, fieldnames=BOOK_FIELDS)
+            writer.writeheader()
+
+            for book_dict in books_from_cat_url(cat):
+                writer.writerow(book_dict)
