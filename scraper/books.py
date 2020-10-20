@@ -16,6 +16,8 @@ BOOK_FIELDS = [
     "rating_review",
 ]
 
+ONE_TO_FIVE_DICT_TO_INT = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
+
 
 def books_url_from_cat_url(cat_url):
     """ Yields book URLs from a category URL, follows `next` links """
@@ -86,18 +88,14 @@ def get_book_dict_from_url(book_url):
     data["img_url"] = urljoin(book_url, img_url)
     save_image_url_to_file(data["img_url"])
 
-    data["title"] = tree.xpath("//div[contains(@class, 'product_main')]/h1")[
-        0
-    ].text.strip()
+    title_xpath = "//div[contains(@class, 'product_main')]/h1"
+    data["title"] = tree.xpath(title_xpath)[0].text.strip()
 
     # Ugly conversion from word to int...
-    rating_classes = (
-        tree.xpath("//p[contains(@class, 'star-rating')]")[0].attrib["class"].split()
-    )
+    rating_xpath = "//p[contains(@class, 'star-rating')]"
+    rating_classes = tree.xpath(rating_xpath)[0].attrib["class"].split()
     rating_classes.remove("star-rating")
     rating_word = str.lower(rating_classes.pop())
-    data["rating_review"] = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}[
-        rating_word
-    ]
+    data["rating_review"] = ONE_TO_FIVE_DICT_TO_INT[rating_word]
 
     return data
