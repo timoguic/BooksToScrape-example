@@ -53,18 +53,21 @@ def get_book_dict_from_url(book_url):
     data = dict.fromkeys(BOOK_FIELDS, None)
     tree = url_to_tree(book_url)
 
+    # Page URL
     data["product_page_url"] = book_url
 
-    # Sometimes, the description is missing
-    product_desc_elem = tree.xpath(
-        "//div[@id='product_description']/following-sibling::p"
-    )
+    # Product desc: sometimes, it is missing
     product_desc_txt = ""
+
+    desc_xpath = "//div[@id='product_description']/following-sibling::p"
+
+    product_desc_elem = tree.xpath(desc_xpath)
     if product_desc_elem:
         product_desc_txt = product_desc_elem[0].text
 
     data["product_description"] = product_desc_txt.strip()
 
+    # UPC code
     data["upc"] = get_td_text_from_th_in_book_tree(tree, "UPC").strip()
 
     # Convert prices to Decimal
@@ -78,16 +81,16 @@ def get_book_dict_from_url(book_url):
     data["price_including_tax"] = Decimal(f"{p_elems[0]}.{p_elems[1]}")
 
     # Parse the available number to int
-    num_avail_text = get_td_text_from_th_in_book_tree(tree, "Availability").strip()
-    data["number_available"] = int(
-        re.search(r"(\d+) available", num_avail_text).groups()[0]
-    )
+    num_avail_label = get_td_text_from_th_in_book_tree(tree, "Availability").strip()
+    num_avail_text = re.search(r"(\d+) available", num_avail_label).groups()[0]
+    data["number_available"] = int(num_avail_text)
 
     # Get the img and save it to disk
     img_url = tree.xpath("//div[contains(@class, 'thumbnail')]//img")[0].attrib["src"]
     data["img_url"] = urljoin(book_url, img_url)
     save_image_url_to_file(data["img_url"])
 
+    # Title
     title_xpath = "//div[contains(@class, 'product_main')]/h1"
     data["title"] = tree.xpath(title_xpath)[0].text.strip()
 
